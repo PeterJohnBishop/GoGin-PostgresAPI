@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	server.Http_Server()
+	//server.Http_Server()
+	server.Gin_Server()
 }

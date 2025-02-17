@@ -10,7 +10,7 @@ import (
 func Http_Server() {
 	fmt.Println("HTTP server on port 8080 is a Go!")
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(routes.Test))
+	mux.Handle("/", http.HandlerFunc(routes.TestHandler))
 	err := http.ListenAndServe(":8080", mux)
 
 	if err != nil {
