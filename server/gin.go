@@ -16,13 +16,13 @@ func isGitRepo(path string) bool {
 }
 
 func initGitRepo(path string) error {
-	if isGitRepo(path + "/.git") {
+	if isGitRepo(path + ".git") {
 		fmt.Println("Git repository already initialized at", path)
 		return nil
 	}
 
 	fmt.Println("Initializing new Git repository at", path)
-	cmd := exec.Command("git", "init", "--bare", path)
+	cmd := exec.Command("git", "init", path)
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("failed to initialize Git repo: %w", err)
@@ -32,7 +32,7 @@ func initGitRepo(path string) error {
 }
 
 func Gin_Server() {
-	repoPath := "./repo"
+	repoPath := "/Users/peterbishop/Development/local/"
 
 	if err := initGitRepo(repoPath); err != nil {
 		log.Fatalf("Error initializing Git repository: %v", err)
@@ -45,5 +45,5 @@ func Gin_Server() {
 	router.POST("/commit", routes.HandleCommit)
 
 	log.Println("Server running on :8888")
-	router.Run(":8080")
+	router.Run(":8888")
 }
