@@ -13,7 +13,7 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func CreateUsers(db *sql.DB, user User) error {
+func CreateUser(db *sql.DB, user User) error {
 	query := "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id, created_at"
 	err := db.QueryRow(query, user.Name, user.Email).Scan(&user.ID, &user.CreatedAt)
 	if err != nil {
@@ -51,7 +51,7 @@ func GetUsers(db *sql.DB) ([]User, error) {
 	return users, nil
 }
 
-func updateUser(db *sql.DB, id int, user User) (User, error) {
+func UpdateUser(db *sql.DB, id int, user User) (User, error) {
 
 	query := "UPDATE users SET name=$1, email=$2, created_at=NOW() WHERE id=$3 RETURNING id, name, email, created_at"
 	err := db.QueryRow(query, user.Name, user.Email, id).Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
@@ -63,7 +63,7 @@ func updateUser(db *sql.DB, id int, user User) (User, error) {
 	return user, nil
 }
 
-func deleteUser(db *sql.DB, id int) error {
+func DeleteUser(db *sql.DB, id int) error {
 
 	query := "DELETE FROM users WHERE id = $1"
 	res, err := db.Exec(query, id)

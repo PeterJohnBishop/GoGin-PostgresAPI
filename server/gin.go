@@ -24,9 +24,9 @@ func Gin_Server(db *sql.DB) {
 
 	router := gin.Default()
 
-	router.POST("/upload", routes.HandleUpload)
-	router.GET("/pull", routes.HandlePull)
-	router.POST("/commit", routes.HandleCommit)
+	router.POST("/users/new", func(c *gin.Context) {
+		routes.CreateUser(db, c)
+	})
 
 	log.Println("Server running on :8888")
 	router.Run(port)
