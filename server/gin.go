@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +9,8 @@ import (
 	"symetrical-fishstick-go/main.go/routes"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func isGitRepo(path string) bool {
@@ -31,12 +34,42 @@ func initGitRepo(path string) error {
 	return nil
 }
 
+func connectPSQL() {
+	host := os.Getenv("PSQL_HOST")
+	port := os.Getenv("PSQL_PORT")
+	user := os.Getenv("PSQL_USER")
+	password := os.Getenv("PSQL_PASSWORD")
+	dbname := os.Getenv("PSQL_DBNAME")
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func Gin_Server() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	port := os.Getenv("GIN_PORT")
+
 	repoPath := "/Users/peterbishop/Development/local/"
 
 	if err := initGitRepo(repoPath); err != nil {
 		log.Fatalf("Error initializing Git repository: %v", err)
 	}
+
+	connectPSQL()
 
 	router := gin.Default()
 
@@ -45,5 +78,5 @@ func Gin_Server() {
 	router.POST("/commit", routes.HandleCommit)
 
 	log.Println("Server running on :8888")
-	router.Run(":8888")
+	router.Run(port)
 }
