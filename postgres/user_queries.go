@@ -11,6 +11,7 @@ type User struct {
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func CreateUser(db *sql.DB, user User) error {
@@ -23,9 +24,22 @@ func CreateUser(db *sql.DB, user User) error {
 	return nil
 }
 
+func GetUserById(db *sql.DB, id int) (User, error) {
+	var user User
+
+	query := "SELECT id, name, email, created_at FROM users WHERE id = $1"
+	err := db.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+		return user, err
+	}
+
+	return user, nil
+}
+
 func GetUsers(db *sql.DB) ([]User, error) {
 
-	rows, err := db.Query("SELECT id, name, email, created_at FROM users;") // Include created_at
+	rows, err := db.Query("SELECT id, name, email, created_at FROM users;")
 	if err != nil {
 		fmt.Println("Error executing query:", err)
 		return nil, err
@@ -52,15 +66,21 @@ func GetUsers(db *sql.DB) ([]User, error) {
 }
 
 func UpdateUser(db *sql.DB, id int, user User) (User, error) {
+	fmt.Printf("updating user id: %d for user %v", id, user)
+	query := `
+	UPDATE users 
+	SET name = $1, email = $2, updated_at = NOW() 
+	WHERE id = $3 
+	RETURNING id, name, email, created_at, updated_at`
 
-	query := "UPDATE users SET name=$1, email=$2, created_at=NOW() WHERE id=$3 RETURNING id, name, email, created_at"
-	err := db.QueryRow(query, user.Name, user.Email, id).Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+	var updatedUser User
+	err := db.QueryRow(query, user.Name, user.Email, id).
+		Scan(&updatedUser.ID, &updatedUser.Name, &updatedUser.Email, &updatedUser.CreatedAt, &updatedUser.UpdatedAt)
 
 	if err != nil {
-		return user, err
+		return User{}, err
 	}
-
-	return user, nil
+	return updatedUser, nil
 }
 
 func DeleteUser(db *sql.DB, id int) error {

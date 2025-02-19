@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strconv"
 	"symetrical-fishstick-go/main.go/postgres"
 	"symetrical-fishstick-go/main.go/routes"
 
@@ -25,7 +26,37 @@ func Gin_Server(db *sql.DB) {
 	router := gin.Default()
 
 	router.POST("/users/new", func(c *gin.Context) {
-		routes.CreateUser(db, c)
+		routes.CreateUserHandler(db, c)
+	})
+	router.GET("/users/", func(c *gin.Context) {
+		routes.GetUsersHandler(db, c)
+	})
+	router.GET("/users/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid user ID"})
+			return
+		}
+		routes.GetUserByIdHandler(db, idInt, c)
+	})
+	router.PUT("/users/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid user ID"})
+			return
+		}
+		routes.UpdateUserHandler(db, idInt, c)
+	})
+	router.DELETE("/users/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid user ID"})
+			return
+		}
+		routes.DeleteUserHandler(db, idInt, c)
 	})
 
 	log.Println("Server running on :8888")
