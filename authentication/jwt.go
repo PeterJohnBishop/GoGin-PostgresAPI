@@ -48,21 +48,15 @@ func CreateToken(username string) (string, error) {
 }
 
 func VerifyToken(tokenString string) error {
-	// Parse the token with the secret key
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
-
-	// Check for verification errors
 	if err != nil {
 		return err
 	}
-
-	// Check if the token is valid
 	if !token.Valid {
 		return err
 	}
 
-	// Return the verified token
 	return nil
 }
