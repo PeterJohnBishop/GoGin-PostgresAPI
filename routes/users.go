@@ -3,6 +3,7 @@ package routes
 import (
 	"database/sql"
 	"net/http"
+	"strings"
 
 	"symetrical-fishstick-go/main.go/authentication"
 	"symetrical-fishstick-go/main.go/postgres"
@@ -43,7 +44,17 @@ func Login(db *sql.DB, email string, password string, c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	token, err := authentication.CreateToken(email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate authentication token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Login Success",
+		"token":   token,
+		"user":    user,
+	})
 }
 
 func GetUserByEmailHandler(db *sql.DB, email string, c *gin.Context) {
@@ -70,6 +81,25 @@ func GetUserByIdHandler(db *sql.DB, id int, c *gin.Context) {
 }
 
 func GetUsersHandler(db *sql.DB, c *gin.Context) {
+
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Token missing!"})
+		return
+	}
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	if token == authHeader {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid token format!"})
+		return
+	}
+
+	err := authentication.VerifyToken(token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify token!"})
+		return
+	}
+
 	var users []postgres.User
 	allUsers, err := postgres.GetUsers(db)
 	if err != nil {

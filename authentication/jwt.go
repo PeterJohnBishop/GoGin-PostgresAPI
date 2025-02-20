@@ -2,11 +2,9 @@ package authentication
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
@@ -31,7 +29,7 @@ func getRole(username string) string {
 	return "employee"
 }
 
-func createToken(username string) (string, error) {
+func CreateToken(username string) (string, error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": username,                         // Subject (user identifier)
 		"iss": "todo-app",                       // Issuer
@@ -49,32 +47,7 @@ func createToken(username string) (string, error) {
 	return tokenString, nil
 }
 
-func authenticateMiddleware(c *gin.Context) {
-	// Retrieve the token from the cookie
-	tokenString, err := c.Cookie("token")
-	if err != nil {
-		fmt.Println("Token missing in cookie")
-		c.Redirect(http.StatusSeeOther, "/login")
-		c.Abort()
-		return
-	}
-
-	token, err := verifyToken(tokenString)
-	if err != nil {
-		fmt.Printf("Token verification failed: %v\\n", err)
-		c.Redirect(http.StatusSeeOther, "/login")
-		c.Abort()
-		return
-	}
-
-	// Print information about the verified token
-	fmt.Printf("Token verified successfully. Claims: %+v\\n", token.Claims)
-
-	// Continue with the next middleware or route handler
-	c.Next()
-}
-
-func verifyToken(tokenString string) (*jwt.Token, error) {
+func VerifyToken(tokenString string) error {
 	// Parse the token with the secret key
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
@@ -82,14 +55,14 @@ func verifyToken(tokenString string) (*jwt.Token, error) {
 
 	// Check for verification errors
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Check if the token is valid
 	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return err
 	}
 
 	// Return the verified token
-	return token, nil
+	return nil
 }
