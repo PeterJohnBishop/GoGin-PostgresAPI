@@ -58,6 +58,25 @@ func Login(db *sql.DB, email string, password string, c *gin.Context) {
 }
 
 func GetUserByEmailHandler(db *sql.DB, email string, c *gin.Context) {
+
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Token missing!"})
+		return
+	}
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	if token == authHeader {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid token format!"})
+		return
+	}
+
+	err := authentication.VerifyToken(token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify token!"})
+		return
+	}
+
 	var user postgres.User
 	foundUser, err := postgres.GetUserByEmail(db, email)
 	if err != nil {
@@ -69,6 +88,25 @@ func GetUserByEmailHandler(db *sql.DB, email string, c *gin.Context) {
 }
 
 func GetUserByIdHandler(db *sql.DB, id int, c *gin.Context) {
+
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Token missing!"})
+		return
+	}
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	if token == authHeader {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid token format!"})
+		return
+	}
+
+	err := authentication.VerifyToken(token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify token!"})
+		return
+	}
+
 	var user postgres.User
 	foundUser, err := postgres.GetUserById(db, id)
 	if err != nil {
@@ -112,6 +150,25 @@ func GetUsersHandler(db *sql.DB, c *gin.Context) {
 }
 
 func UpdateUserHandler(db *sql.DB, id int, c *gin.Context) {
+
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Token missing!"})
+		return
+	}
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	if token == authHeader {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid token format!"})
+		return
+	}
+
+	err := authentication.VerifyToken(token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify token!"})
+		return
+	}
+
 	var user postgres.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
@@ -131,6 +188,25 @@ func UpdateUserHandler(db *sql.DB, id int, c *gin.Context) {
 }
 
 func DeleteUserHandler(db *sql.DB, id int, c *gin.Context) {
+
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Token missing!"})
+		return
+	}
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	if token == authHeader {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid token format!"})
+		return
+	}
+
+	authErr := authentication.VerifyToken(token)
+	if authErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify token!"})
+		return
+	}
+
 	err := postgres.DeleteUser(db, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
