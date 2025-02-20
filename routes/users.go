@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	"symetrical-fishstick-go/main.go/authentication"
 	"symetrical-fishstick-go/main.go/postgres"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,36 @@ func CreateUserHandler(db *sql.DB, c *gin.Context) {
 
 	c.JSON(http.StatusCreated, user)
 
+}
+
+func Login(db *sql.DB, email string, password string, c *gin.Context) {
+	var user postgres.User
+	foundUser, err := postgres.GetUserByEmail(db, email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user by that email"})
+		return
+	}
+
+	user = foundUser
+
+	pass := authentication.CheckPasswordHash(password, user.Password)
+	if !pass {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Password Verfication Failed"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func GetUserByEmailHandler(db *sql.DB, email string, c *gin.Context) {
+	var user postgres.User
+	foundUser, err := postgres.GetUserByEmail(db, email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user by that email"})
+		return
+	}
+	user = foundUser
+	c.JSON(http.StatusOK, user)
 }
 
 func GetUserByIdHandler(db *sql.DB, id int, c *gin.Context) {

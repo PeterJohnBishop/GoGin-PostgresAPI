@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"symetrical-fishstick-go/main.go/routes"
 
 	"github.com/joho/godotenv"
 )
@@ -20,7 +19,7 @@ func Http_Server() {
 
 	fmt.Println("HTTP server on port 8080 is a Go!")
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(routes.TestHandler))
+	// mux.Handle("/", http.HandlerFunc(routes.TestHandler))
 	srvErr := http.ListenAndServe(port, mux)
 
 	if srvErr != nil {

@@ -28,10 +28,19 @@ func Gin_Server(db *sql.DB) {
 	router.POST("/users/new", func(c *gin.Context) {
 		routes.CreateUserHandler(db, c)
 	})
+	router.POST("/login", func(c *gin.Context) {
+		email := c.Request.FormValue("email")
+		password := c.Request.FormValue("password")
+		routes.Login(db, email, password, c)
+	})
 	router.GET("/users/", func(c *gin.Context) {
 		routes.GetUsersHandler(db, c)
 	})
-	router.GET("/users/:id", func(c *gin.Context) {
+	router.GET("/users/email/:email", func(c *gin.Context) {
+		email := c.Param("email")
+		routes.GetUserByEmailHandler(db, email, c)
+	})
+	router.GET("/users/id/:id", func(c *gin.Context) {
 		id := c.Param("id")
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
