@@ -67,6 +67,21 @@ func Gin_Server(db *sql.DB) {
 		}
 		routes.DeleteUserHandler(db, idInt, c)
 	})
+	router.POST("/messages/new", func(c *gin.Context) {
+		routes.CreateMessageHandler(db, c)
+	})
+	router.GET("/messages/", func(c *gin.Context) {
+		routes.GetMessagesHandler(db, c)
+	})
+	router.DELETE("/messages/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid message ID"})
+			return
+		}
+		routes.DeleteMessageHandler(db, idInt, c)
+	})
 
 	log.Println("Server running on :8888")
 	router.Run(port)

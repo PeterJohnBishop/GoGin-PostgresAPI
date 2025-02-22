@@ -47,7 +47,6 @@ func GetUserByEmail(db *sql.DB, email string) (User, error) {
 
 func GetUserById(db *sql.DB, id int) (User, error) {
 	var user User
-	fmt.Printf("Searching for user by ID %d", id)
 	query := "SELECT id, name, email, password, created_at, updated_at FROM users WHERE id = $1"
 	err := db.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
