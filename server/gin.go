@@ -40,32 +40,17 @@ func Gin_Server(db *sql.DB) {
 		email := c.Param("email")
 		routes.GetUserByEmailHandler(db, email, c)
 	})
-	router.GET("/users/id/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		idInt, err := strconv.Atoi(id)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid user ID"})
-			return
-		}
-		routes.GetUserByIdHandler(db, idInt, c)
+	router.GET("/users/uuid/:uuid", func(c *gin.Context) {
+		uuid := c.Param("uuid")
+		routes.GetUserByUUIDHandler(db, uuid, c)
 	})
-	router.PUT("/users/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		idInt, err := strconv.Atoi(id)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid user ID"})
-			return
-		}
-		routes.UpdateUserHandler(db, idInt, c)
+	router.PUT("/users/:uuid", func(c *gin.Context) {
+		uuid := c.Param("uuid")
+		routes.UpdateUserHandler(db, uuid, c)
 	})
-	router.DELETE("/users/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		idInt, err := strconv.Atoi(id)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "Invalid user ID"})
-			return
-		}
-		routes.DeleteUserHandler(db, idInt, c)
+	router.DELETE("/users/:uuid", func(c *gin.Context) {
+		uuid := c.Param("uuid")
+		routes.DeleteUserHandler(db, uuid, c)
 	})
 	router.POST("/messages/new", func(c *gin.Context) {
 		routes.CreateMessageHandler(db, c)

@@ -87,7 +87,7 @@ func GetUserByEmailHandler(db *sql.DB, email string, c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func GetUserByIdHandler(db *sql.DB, id int, c *gin.Context) {
+func GetUserByUUIDHandler(db *sql.DB, uuid string, c *gin.Context) {
 
 	authHeader := c.Request.Header.Get("Authorization")
 	if authHeader == "" {
@@ -108,7 +108,7 @@ func GetUserByIdHandler(db *sql.DB, id int, c *gin.Context) {
 	}
 
 	var user postgres.User
-	foundUser, err := postgres.GetUserById(db, id)
+	foundUser, err := postgres.GetUserByUUID(db, uuid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user by that id"})
 		return
@@ -149,7 +149,7 @@ func GetUsersHandler(db *sql.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-func UpdateUserHandler(db *sql.DB, id int, c *gin.Context) {
+func UpdateUserHandler(db *sql.DB, uuid string, c *gin.Context) {
 
 	authHeader := c.Request.Header.Get("Authorization")
 	if authHeader == "" {
@@ -175,7 +175,7 @@ func UpdateUserHandler(db *sql.DB, id int, c *gin.Context) {
 		return
 	}
 
-	updatedUser, err := postgres.UpdateUser(db, id, user)
+	updatedUser, err := postgres.UpdateUser(db, uuid, user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
@@ -187,7 +187,7 @@ func UpdateUserHandler(db *sql.DB, id int, c *gin.Context) {
 	})
 }
 
-func DeleteUserHandler(db *sql.DB, id int, c *gin.Context) {
+func DeleteUserHandler(db *sql.DB, uuid string, c *gin.Context) {
 
 	authHeader := c.Request.Header.Get("Authorization")
 	if authHeader == "" {
@@ -207,7 +207,7 @@ func DeleteUserHandler(db *sql.DB, id int, c *gin.Context) {
 		return
 	}
 
-	err := postgres.DeleteUser(db, id)
+	err := postgres.DeleteUser(db, uuid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
