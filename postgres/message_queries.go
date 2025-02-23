@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type Message struct {
@@ -16,11 +18,12 @@ type Message struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-func CreateMessage(db *sql.DB, message Message) error {
-	query := "INSERT INTO messages (sender, text_content, media_content) VALUES ($1, $3, $4) RETURNING id, created_at"
-	queryErr := db.QueryRow(query, message.Sender, message.TextContent, message.MediaContent).Scan(&message.ID, &message.CreatedAt)
+func CreateMessage(db *sql.DB, message *Message) error {
+	query := "INSERT INTO messages (sender, text_content, media_content) VALUES ($1, $2, $3) RETURNING id, created_at, likes"
+
+	queryErr := db.QueryRow(query, message.Sender, message.TextContent, pq.Array(message.MediaContent)).Scan(&message.ID, &message.CreatedAt, pq.Array(&message.Likes))
 	if queryErr != nil {
-		fmt.Println(queryErr)
+		fmt.Println("Error inserting message:", queryErr)
 		return queryErr
 	}
 
@@ -38,10 +41,27 @@ func GetMessages(db *sql.DB) ([]Message, error) {
 	var messages []Message
 	for rows.Next() {
 		var message Message
-		if err := rows.Scan(&message.ID, &message.Sender, &message.TextContent, &message.MediaContent, &message.Likes, &message.CreatedAt, &message.UpdatedAt); err != nil {
+		var updatedAt sql.NullTime
+
+		if err := rows.Scan(
+			&message.ID,
+			&message.Sender,
+			&message.TextContent,
+			pq.Array(&message.MediaContent),
+			pq.Array(&message.Likes),
+			&message.CreatedAt,
+			&updatedAt,
+		); err != nil {
 			fmt.Println("Error scanning row:", err)
 			return nil, err
 		}
+
+		if updatedAt.Valid {
+			message.UpdatedAt = updatedAt.Time
+		} else {
+			message.UpdatedAt = time.Time{}
+		}
+
 		messages = append(messages, message)
 	}
 

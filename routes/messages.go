@@ -37,9 +37,9 @@ func CreateMessageHandler(db *sql.DB, c *gin.Context) {
 		return
 	}
 
-	msgErr := postgres.CreateMessage(db, message)
+	msgErr := postgres.CreateMessage(db, &message)
 	if msgErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create message"})
 		return
 	}
 
