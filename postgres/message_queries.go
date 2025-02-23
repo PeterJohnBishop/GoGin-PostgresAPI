@@ -73,20 +73,6 @@ func GetMessages(db *sql.DB) ([]Message, error) {
 	return messages, nil
 }
 
-// Disabling for now as I don't see a use case for this
-//
-// func GetMessageById(db *sql.DB, id int) (Message, error) {
-// 	var message Message
-// 	query := "SELECT id, sender, text_content, media_content, likes, created_at, updated_at FROM messages WHERE id = $1"
-// 	err := db.QueryRow(query, id).Scan(&message.ID, &message.Sender, &message.TextContent, &message.MediaContent, &message.Likes, &message.CreatedAt, &message.UpdatedAt)
-// 	if err != nil {
-// 		fmt.Println("Error executing query:", err)
-// 		return message, err
-// 	}
-
-// 	return message, nil
-// }
-
 func DeleteMessage(db *sql.DB, id int) error {
 
 	query := "DELETE FROM messages WHERE id = $1"
