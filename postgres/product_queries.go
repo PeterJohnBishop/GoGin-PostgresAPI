@@ -49,3 +49,70 @@ func CreateProduct(db *sql.DB, product *Product) error {
 
 	return nil
 }
+
+func GetProductById(db *sql.DB, product_id string) (Product, error) {
+	var prod Product
+	query := "SELECT product_id, name, description, media_content, price, inventory, likes, created_at, updated_at FROM products WHERE product_id = $1"
+	err := db.QueryRow(query, product_id).Scan(&prod.ProductID, &prod.Name, &prod.Description, &prod.MediaContent, &prod.Price, &prod.Inventory, &prod.Likes, &prod.CreatedAt, &prod.UpdatedAt)
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+		return prod, err
+	}
+
+	return prod, nil
+}
+
+func GetProducts(db *sql.DB) ([]Product, error) {
+	rows, err := db.Query("SELECT product_id, name, description, media_content, price, inventory, likes, created_at, updated_at FROM products")
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var prods []Product
+	for rows.Next() {
+		var prod Product
+		if err := rows.Scan(&prod.ProductID, &prod.Name, &prod.Description, &prod.MediaContent, &prod.Price, &prod.Inventory, &prod.Likes, &prod.CreatedAt, &prod.UpdatedAt); err != nil {
+			fmt.Println("Error scanning row:", err)
+			return nil, err
+		}
+		prods = append(prods, prod)
+		fmt.Println(prods)
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error iterating over rows:", err)
+		return nil, err
+	}
+
+	return prods, nil
+}
+
+func UpdateProduct(db *sql.DB, product_id string, prod Product) (Product, error) {
+	query := `UPDATE products SET name = $2, description = $3, media_content = $4, price = $5, inventory = $6, likes = $7, updated_at = NOW() WHERE product_id WHERE product_id = $1 RETURNING product_id, name, description, media_content, price, inventory, likes, created_at, updated_at`
+
+	var updatedProduct Product
+	err := db.QueryRow(query, prod.ProductID, prod.Name, prod.Description, prod.MediaContent, prod.Price, prod.Inventory, prod.Likes).Scan(&updatedProduct.ProductID, &updatedProduct.Name, &updatedProduct.Description, &updatedProduct.MediaContent, &updatedProduct.Price, &updatedProduct.Inventory, &updatedProduct.Likes, &updatedProduct.CreatedAt, &updatedProduct.UpdatedAt)
+	if err != nil {
+		return Product{}, err
+	}
+	return updatedProduct, nil
+}
+
+func DeleteProduct(db *sql.DB, product_id string) error {
+	query := "DELETE FROM products WHERE product_id = $1"
+	res, err := db.Exec(query, product_id)
+
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+
+	if err != nil || rowsAffected == 0 {
+		return err
+	}
+
+	return nil
+}

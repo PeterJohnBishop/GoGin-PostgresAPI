@@ -87,11 +87,11 @@ func GetUsers(db *sql.DB) ([]User, error) {
 }
 
 func UpdateUser(db *sql.DB, uuid string, user User) (User, error) {
-	fmt.Printf("updating user uuid: %d for user %v", uuid, user)
+	fmt.Printf("updating user uuid: %s for user %v", uuid, user)
 	query := `
 	UPDATE users 
 	SET name = $1, email = $2, password = $3, updated_at = NOW() 
-	WHERE uuid = $3 
+	WHERE uuid = $4 
 	RETURNING id, uuid, name, email, created_at, updated_at`
 
 	var updatedUser User
