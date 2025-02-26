@@ -25,6 +25,7 @@ func Gin_Server(db *sql.DB) {
 
 	router := gin.Default()
 
+	// USER ROUTES
 	router.POST("/users/new", func(c *gin.Context) {
 		routes.CreateUserHandler(db, c)
 	})
@@ -52,6 +53,8 @@ func Gin_Server(db *sql.DB) {
 		uuid := c.Param("uuid")
 		routes.DeleteUserHandler(db, uuid, c)
 	})
+
+	// MESSAGE ROUTES
 	router.POST("/messages/new", func(c *gin.Context) {
 		routes.CreateMessageHandler(db, c)
 	})
@@ -66,6 +69,11 @@ func Gin_Server(db *sql.DB) {
 			return
 		}
 		routes.DeleteMessageHandler(db, idInt, c)
+	})
+
+	// PRODUCT ROUTES
+	router.POST("/products/new", func(c *gin.Context) {
+		routes.CreateProductHandler(db, c)
 	})
 
 	log.Println("Server running on :8888")

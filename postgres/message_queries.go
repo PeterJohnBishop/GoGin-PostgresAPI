@@ -3,13 +3,15 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/lib/pq"
 )
 
 type Message struct {
-	ID           int       `json:"id"`
+	MessageID    string    `json:"message_id"`
 	Sender       string    `json:"sender"` // the author user.id
 	TextContent  string    `json:"text_content"`
 	MediaContent []string  `json:"media_content"` // stores urls
@@ -18,20 +20,45 @@ type Message struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-func CreateMessage(db *sql.DB, message *Message) error {
-	query := "INSERT INTO messages (sender, text_content, media_content) VALUES ($1, $2, $3) RETURNING id, created_at, likes"
+// CREATE TABLE messages (message_id TEXT UNIQUE NOT NULL PRIMARY KEY, sender UUID NOT NULL, text_content TEXT NOT NULL, media_content TEXT[] DEFAULT '{}', likes UUID[] DEFAULT '{}', created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW());
+// {
+// 	"message_id": "message_e0de5e50-f3ac-11ef-a249-0a400849f31f",
+// 	"sender": "cce3855a-c206-4bc6-bbae-106c8f73892a",
+// 	"text_content": "Hello, world!",
+// 	"media_content": [],
+// 	"likes": [],
+// 	"created_at": "2025-02-25T12:15:30.439203Z",
+// 	"updated_at": "2025-02-25T12:15:30.439203Z"
+// }
 
-	queryErr := db.QueryRow(query, message.Sender, message.TextContent, pq.Array(message.MediaContent)).Scan(&message.ID, &message.CreatedAt, pq.Array(&message.Likes))
+func CreateMessage(db *sql.DB, message *Message) error {
+	id, err := uuid.NewV1()
+	if err != nil {
+		log.Fatal(err)
+	}
+	messageID := "message_" + id.String()
+
+	query := `
+		INSERT INTO messages (message_id, sender, text_content, media_content)
+		VALUES ($1, $2, $3, $4)
+		RETURNING created_at, likes
+	`
+
+	queryErr := db.QueryRow(query, messageID, message.Sender, message.TextContent, pq.Array(message.MediaContent)).
+		Scan(&message.CreatedAt, pq.Array(&message.Likes))
+
 	if queryErr != nil {
 		fmt.Println("Error inserting message:", queryErr)
 		return queryErr
 	}
 
+	message.MessageID = messageID
+
 	return nil
 }
 
 func GetMessages(db *sql.DB) ([]Message, error) {
-	rows, err := db.Query("SELECT id, sender, text_content, media_content, likes, created_at, updated_at FROM messages;")
+	rows, err := db.Query("SELECT message_id, sender, text_content, media_content, likes, created_at, updated_at FROM messages;")
 	if err != nil {
 		fmt.Println("Error executing query:", err)
 		return nil, err
@@ -44,7 +71,7 @@ func GetMessages(db *sql.DB) ([]Message, error) {
 		var updatedAt sql.NullTime
 
 		if err := rows.Scan(
-			&message.ID,
+			&message.MessageID,
 			&message.Sender,
 			&message.TextContent,
 			pq.Array(&message.MediaContent),
@@ -75,7 +102,7 @@ func GetMessages(db *sql.DB) ([]Message, error) {
 
 func DeleteMessage(db *sql.DB, id int) error {
 
-	query := "DELETE FROM messages WHERE id = $1"
+	query := "DELETE FROM messages WHERE message_id = $1"
 	res, err := db.Exec(query, id)
 
 	if err != nil {
