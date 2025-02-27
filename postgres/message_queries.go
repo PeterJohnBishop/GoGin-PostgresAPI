@@ -20,7 +20,7 @@ type Message struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// CREATE TABLE messages (message_id TEXT UNIQUE NOT NULL PRIMARY KEY, sender UUID NOT NULL, text_content TEXT NOT NULL, media_content TEXT[] DEFAULT '{}', likes UUID[] DEFAULT '{}', created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW());
+// CREATE TABLE messages (message_id TEXT UNIQUE NOT NULL PRIMARY KEY, sender TEXT NOT NULL, text_content TEXT NOT NULL, media_content TEXT[] DEFAULT '{}', likes TEXT[] DEFAULT '{}', created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW());
 // {
 // 	"message_id": "message_e0de5e50-f3ac-11ef-a249-0a400849f31f",
 // 	"sender": "cce3855a-c206-4bc6-bbae-106c8f73892a",
@@ -68,7 +68,6 @@ func GetMessages(db *sql.DB) ([]Message, error) {
 	var messages []Message
 	for rows.Next() {
 		var message Message
-		var updatedAt sql.NullTime
 
 		if err := rows.Scan(
 			&message.MessageID,
@@ -77,16 +76,10 @@ func GetMessages(db *sql.DB) ([]Message, error) {
 			pq.Array(&message.MediaContent),
 			pq.Array(&message.Likes),
 			&message.CreatedAt,
-			&updatedAt,
+			&message.UpdatedAt,
 		); err != nil {
 			fmt.Println("Error scanning row:", err)
 			return nil, err
-		}
-
-		if updatedAt.Valid {
-			message.UpdatedAt = updatedAt.Time
-		} else {
-			message.UpdatedAt = time.Time{}
 		}
 
 		messages = append(messages, message)
@@ -100,7 +93,7 @@ func GetMessages(db *sql.DB) ([]Message, error) {
 	return messages, nil
 }
 
-func DeleteMessage(db *sql.DB, id int) error {
+func DeleteMessage(db *sql.DB, id string) error {
 
 	query := "DELETE FROM messages WHERE message_id = $1"
 	res, err := db.Exec(query, id)

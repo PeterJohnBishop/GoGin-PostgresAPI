@@ -77,7 +77,7 @@ func GetMessagesHandler(db *sql.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, messages)
 }
 
-func DeleteMessageHandler(db *sql.DB, id int, c *gin.Context) {
+func DeleteMessageHandler(db *sql.DB, id string, c *gin.Context) {
 
 	authHeader := c.Request.Header.Get("Authorization")
 	if authHeader == "" {

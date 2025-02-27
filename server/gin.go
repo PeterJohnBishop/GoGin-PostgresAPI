@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"os"
-	"strconv"
 	"symetrical-fishstick-go/main.go/postgres"
 	"symetrical-fishstick-go/main.go/routes"
 
@@ -63,12 +62,11 @@ func Gin_Server(db *sql.DB) {
 	})
 	router.DELETE("/messages/:id", func(c *gin.Context) {
 		id := c.Param("id")
-		idInt, err := strconv.Atoi(id)
 		if err != nil {
 			c.JSON(400, gin.H{"error": "Invalid message ID"})
 			return
 		}
-		routes.DeleteMessageHandler(db, idInt, c)
+		routes.DeleteMessageHandler(db, id, c)
 	})
 
 	// PRODUCT ROUTES
