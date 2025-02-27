@@ -27,7 +27,6 @@ func CreateUser(db *sql.DB, user User) error {
 		log.Fatal(err)
 	}
 	userID := "user_" + id.String()
-
 	hashedPassword, err := authentication.HashedPassword(user.Password)
 	if err != nil {
 		fmt.Println(err)
@@ -39,20 +38,17 @@ func CreateUser(db *sql.DB, user User) error {
 		fmt.Println(queryErr)
 		return queryErr
 	}
-
 	return nil
 }
 
 func GetUserByEmail(db *sql.DB, email string) (User, error) {
 	var user User
-
 	query := "SELECT user_id, name, email, password, created_at, updated_at FROM users WHERE email = $1"
 	err := db.QueryRow(query, email).Scan(&user.UserID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		fmt.Println(err)
 		return user, err
 	}
-
 	return user, nil
 }
 
@@ -64,21 +60,16 @@ func GetUserByUUID(db *sql.DB, user_id string) (User, error) {
 		fmt.Println(err)
 		return user, err
 	}
-
 	return user, nil
 }
 
 func GetUsers(db *sql.DB) ([]User, error) {
-
-	fmt.Printf("Getting all users")
-
 	rows, err := db.Query("SELECT user_id, name, email, password, created_at, updated_at FROM users;")
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
-
 	var users []User
 	for rows.Next() {
 		var user User
@@ -87,29 +78,23 @@ func GetUsers(db *sql.DB) ([]User, error) {
 			return nil, err
 		}
 		users = append(users, user)
-		fmt.Println(users)
 	}
-
 	if err := rows.Err(); err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
-
 	return users, nil
 }
 
 func UpdateUser(db *sql.DB, user_id string, user User) (User, error) {
-
 	query := `
 	UPDATE users 
 	SET name = $1, email = $2, password = $3, updated_at = NOW() 
 	WHERE user_id = $4 
 	RETURNING user_id, name, email, password, created_at, updated_at`
-
 	var updatedUser User
 	err := db.QueryRow(query, user.Name, user.Email, user.Password, user_id).
 		Scan(&updatedUser.UserID, &updatedUser.Name, &updatedUser.Email, &updatedUser.Password, &updatedUser.CreatedAt, &updatedUser.UpdatedAt)
-
 	if err != nil {
 		fmt.Println(err)
 		return User{}, err
@@ -118,22 +103,17 @@ func UpdateUser(db *sql.DB, user_id string, user User) (User, error) {
 }
 
 func DeleteUser(db *sql.DB, user_id string) error {
-
 	query := "DELETE FROM users WHERE user_id = $1"
 	res, err := db.Exec(query, user_id)
-
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-
 	rowsAffected, err := res.RowsAffected()
-
 	if err != nil || rowsAffected == 0 {
 		fmt.Println(err)
 		return err
 	}
-
 	return nil
 
 }
