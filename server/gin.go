@@ -89,6 +89,26 @@ func Gin_Server(db *sql.DB) {
 		routes.DeleteProductHandler(db, id, c)
 	})
 
+	// ORDER ROUTES
+	router.POST("/orders/new", func(c *gin.Context) {
+		routes.CreateOrderHandler(db, c)
+	})
+	router.GET("/orders/", func(c *gin.Context) {
+		routes.GetOrdersHandler(db, c)
+	})
+	router.GET("/orders/:orderID", func(c *gin.Context) {
+		id := c.Param("orderID")
+		routes.GetOrderByIdHandler(db, id, c)
+	})
+	router.PUT("/orders/:orderID", func(c *gin.Context) {
+		id := c.Param("orderID")
+		routes.UpdateOrderHandler(db, id, c)
+	})
+	router.DELETE("/orders/:orderID", func(c *gin.Context) {
+		id := c.Param("orderID")
+		routes.DeleteOrderHandler(db, id, c)
+	})
+
 	log.Println("Server running on :8888")
 	router.Run(port)
 }
