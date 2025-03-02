@@ -23,11 +23,16 @@ func ConnectPSQL(db *sql.DB) *sql.DB {
 		fmt.Println("Invalid port number:", err)
 	}
 	user := os.Getenv("PSQL_USER")
+	fmt.Println("User:", user)
 	password := os.Getenv("PSQL_PASSWORD")
+	fmt.Println("Password:",
+		password)
 	dbname := os.Getenv("PSQL_DBNAME")
+	fmt.Println("DB Name:", dbname)
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
+	fmt.Println("PSQL Info:", psqlInfo)
 	mydb, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)

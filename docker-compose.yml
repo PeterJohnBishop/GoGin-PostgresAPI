@@ -1,0 +1,39 @@
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${PSQL_USER}
+      POSTGRES_PASSWORD: ${PSQL_PASSWORD}
+      POSTGRES_DB: ${PSQL_DBNAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: go_app
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    environment:
+      DB_HOST: ${PSQL_HOST}
+      DB_USER: ${PSQL_USER}
+      DB_PASSWORD: ${PSQL_PASSWORD}
+      DB_NAME: ${PSQL_DBNAME}
+      DB_PORT: ${PSQL_PORT}
+    ports:
+      - "8888:8888"
+
+volumes:
+  postgres_data:
+
+
+ 
